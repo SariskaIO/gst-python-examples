@@ -4,7 +4,7 @@
 Simple example to demonstrate dynamically adding and removing source elements
 to a playing pipeline.
 
-This particular example uses videotestsrc elements and a compositor to display the source twice
+This particular example uses videotestsrc elements and a compositor to display the source four times
 '''
 
 import sys
@@ -68,55 +68,46 @@ def timeout_cb(pdata):
 def main(args):
     Gst.init(None)
 
-    # Create pipeline and elements
+    # Create a main loop
+    loop = GLib.MainLoop()
+
+        # Create pipeline and elements
     pipe = Gst.Pipeline.new('dynamic')
-    src1 = Gst.ElementFactory.make('videotestsrc')
-    src2 = Gst.ElementFactory.make('videotestsrc')
+    srcs = [Gst.ElementFactory.make('videotestsrc') for _ in range(4)]
     compositor = Gst.ElementFactory.make('compositor')
     sink = Gst.ElementFactory.make('autovideosink')
-    
+
     # Add elements to the pipeline
-    pipe.add(src1)
-    pipe.add(src2)
+    [pipe.add(src) for src in srcs]  
     pipe.add(compositor)
     pipe.add(sink)
 
     # Request pads from the compositor
-    pad1 = compositor.get_request_pad('sink_%u')
-    pad2 = compositor.get_request_pad('sink_%u')
-
+    pads = [compositor.get_request_pad(f'sink_{i}') for i in range(4)]
 
     # Set properties for the pads to control the layout
-    pad1.set_property('xpos', 0)  # position of src1
-
-    # Get the width of pad1
-    pad2.set_property('xpos', 320)  # position of src2
+    pad_properties = [(0, 0), (320, 0), (0, 320), (320, 320)]
+    [pads[i].set_property('xpos', x) for i, (x, _) in enumerate(pad_properties)]
+    [pads[i].set_property('ypos', y) for i, (_, y) in enumerate(pad_properties)]
 
     # Get the source pads
-    srcpad1 = src1.get_static_pad("src")
-    srcpad2 = src2.get_static_pad("src")
+    for i, src in enumerate(srcs):
+        srcpad = src.get_static_pad("src")
+        srcpad.link(pads[i])
 
-    # Link the source pads to the requested pads of the compositor
-    srcpad1.link(pad1)
-    srcpad2.link(pad2)
 
     # Link the sources to the compositor
-    src1.link(compositor)
-    src2.link(compositor)
+    [src.link(compositor) for src in srcs]
 
     # Link the compositor to the sink
     compositor.link(sink)
 
     # Initialize ProbeData objects for dynamic source management
-    pdata1 = ProbeData(pipe, src1)
-    pdata2 = ProbeData(pipe, src2)
-
-    # Create a main loop
-    loop = GObject.MainLoop()
+    pdata = [ProbeData(pipe, src) for src in srcs]
 
     # Add timeout callbacks for dynamic source management
-    GLib.timeout_add_seconds(20, timeout_cb, pdata1)
-    GLib.timeout_add_seconds(20, timeout_cb, pdata2)
+    [GLib.timeout_add_seconds(20, timeout_cb, data) for data in pdata]
+
 
     # Setup bus to handle messages
     bus = pipe.get_bus()
