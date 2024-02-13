@@ -9,6 +9,7 @@ This particular example uses videotestsrc elements and a compositor to display t
 
 import sys
 import random
+import os
 
 import gi
 gi.require_version('Gst', '1.0')
@@ -16,6 +17,7 @@ gi.require_version('GLib', '2.0')
 gi.require_version('GObject', '2.0')
 from gi.repository import GLib, GObject, Gst
 
+os.environ['GST_DEBUG'] = '3'
 class ProbeData:
     def __init__(self, pipe, src):
         self.pipe = pipe
@@ -94,7 +96,7 @@ def main(args):
     loop = GObject.MainLoop()
 
     GLib.timeout_add_seconds(20, timeout_cb, pdata1)
-    GLib.timeout_add_seconds(10, timeout_cb, pdata2)
+    GLib.timeout_add_seconds(20, timeout_cb, pdata2)
 
     bus = pipe.get_bus()
     bus.add_signal_watch()
