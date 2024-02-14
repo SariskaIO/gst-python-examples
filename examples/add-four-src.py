@@ -39,6 +39,7 @@ def bus_call(bus, message, loop):
 def dispose_src_cb(src):
     src.set_state(Gst.State.NULL)
 
+
 # Callback function for pad probe
 def probe_cb(pad, info, pdata):
     peer = pad.get_peer()
@@ -62,6 +63,7 @@ def probe_cb(pad, info, pdata):
 def timeout_cb(pdata):
     srcpad = pdata.src.get_static_pad('src')
     srcpad.add_probe(Gst.PadProbeType.IDLE, probe_cb, pdata)
+
     return GLib.SOURCE_REMOVE
 
 # Main function
@@ -71,7 +73,7 @@ def main(args):
     # Create a main loop
     loop = GLib.MainLoop()
 
-        # Create pipeline and elements
+    # Create pipeline and elements
     pipe = Gst.Pipeline.new('dynamic')
     srcs = [Gst.ElementFactory.make('videotestsrc') for _ in range(4)]
     compositor = Gst.ElementFactory.make('compositor')
@@ -89,6 +91,9 @@ def main(args):
     pad_properties = [(0, 0), (320, 0), (0, 320), (320, 320)]
     [pads[i].set_property('xpos', x) for i, (x, _) in enumerate(pad_properties)]
     [pads[i].set_property('ypos', y) for i, (_, y) in enumerate(pad_properties)]
+    [pad.set_property('width', 320) for pad in pads]
+    [pad.set_property('height', 320) for pad in pads]
+    
 
     # Get the source pads
     for i, src in enumerate(srcs):
@@ -107,7 +112,6 @@ def main(args):
 
     # Add timeout callbacks for dynamic source management
     [GLib.timeout_add_seconds(20, timeout_cb, data) for data in pdata]
-
 
     # Setup bus to handle messages
     bus = pipe.get_bus()
