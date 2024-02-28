@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+
+# Change number of columns
+# Change total_participants
+
 import sys
 import gi
 import logging
@@ -32,7 +36,7 @@ def add_video_source(participant_num):
     pipeline.add(src)
     participants.append(src)
 
-    num_cols = 2  # Number of columns in the grid
+    num_cols = 4  # Number of columns in the grid
     row = participant_num // num_cols
     col = participant_num % num_cols
 
@@ -48,7 +52,7 @@ def add_video_source(participant_num):
     src.link(compositor)
     pipeline.set_state(Gst.State.PLAYING)
 
-def remove_participant():
+def remove_sink_pad():
     if participants:
         participant_to_remove = random.choice(participants)
         participants.remove(participant_to_remove)
@@ -64,7 +68,7 @@ def remove_participant():
         # Re-adjust the positions of the remaining participants
         for i, participant in enumerate(participants):
             participant_num = int(participant.get_name().split('+')[-1])
-            num_cols = 2
+            num_cols = 4
             row = i // num_cols
             col = i % num_cols
 
@@ -80,7 +84,7 @@ def add_participants(total_participants, current_participant):
         current_participant += 1
 
         # Schedule adding the next participant after 5 seconds
-        GLib.timeout_add_seconds(2, add_participants, total_participants, current_participant)
+        GLib.timeout_add_seconds(1, add_participants, total_participants, current_participant)
 
 def main(args):
     global compositor, sink, pipeline
@@ -97,7 +101,7 @@ def main(args):
     sink = get_sink()
     pipeline.add(sink)
 
-    total_participants = 8
+    total_participants = 9
     current_participant = 0
 
     add_participants(total_participants, current_participant)
@@ -107,7 +111,7 @@ def main(args):
     pipeline.set_state(Gst.State.PLAYING)
 
     # Schedule removing a participant randomly every 10 seconds
-    GLib.timeout_add_seconds(25, remove_participant)
+    GLib.timeout_add_seconds(25, remove_sink_pad)
 
     try:
         loop.run()
