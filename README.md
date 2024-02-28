@@ -29,5 +29,32 @@ Note: In case of helloworld.py, you'd need to pass the path to the file you want
 python helloworld.py ../assets/video.mp4
 ```
 
+## Usage per examples
+
+1. Ensure GStreamer is installed on your system.
+
+2. Run the script using Python 3:
+
+    ```bash
+    python3 add-sources-and-sinks-in-sequence.py
+    ```
+
+3. Modify the script to customize the grid layout and total number of participants.
+
+## Customization
+
+- To change the number of columns in the grid, modify the `num_cols` variable in the `add_video_source` function.
+  
+- To change the total number of participants, modify the `total_participants` variable in the `main` function.
+
+## Features
+
+- **Dynamic Participants**: Participants are dynamically added and removed at runtime.
+
+- **Grid Layout**: Video sources are arranged in a grid using the compositor element.
+
+- **Real-time Adjustments**: The pipeline adapts in real-time to changes in the number of participants.
+
+
 # Troubleshooting
 If you encounter any issues, make sure you have the latest versions of Python and GStreamer installed. If the problem persists, please open an issue on GitHub.
